@@ -1,6 +1,6 @@
 [package]
 name = "app"
-version = "0.8.0"
+version = "0.8.1"
 description = "Markdown notebook with an encrypted vault and project documents for AI coding"
 authors = ["Samuel Xing (XING GUIYU)"]
 license = "AGPL-3.0-only"

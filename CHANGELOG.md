@@ -2,6 +2,13 @@
 
 Notable changes in each version. 中文：[CHANGELOG.zh-CN.md](CHANGELOG.zh-CN.md)
 
+## 0.8.1
+
+- Moving a note to the Trash now shows an Undo button for a few seconds; ⌘Z works too.
+- PDF export and print no longer stall on long notes with many images, and large images are no longer missing from the result.
+- The Restore and Delete Permanently buttons in the Trash no longer wrap in English.
+- Switching the language no longer freezes the window.
+
 ## 0.8.0
 
 First public release.

@@ -1007,7 +1007,50 @@ window.addEventListener('keydown', (e) => {
   e.preventDefault()
   zoom(dir)
 })
-watch(toast, (t) => t && setTimeout(() => (toast.value = ''), 2200))
+/** 提示条上的「撤销」：刚把笔记移进回收站时可以点它放回原处 */
+const undo = ref<null | (() => Promise<void>)>(null)
+let toastTimer = 0
+watch(toast, (t) => {
+  clearTimeout(toastTimer)
+  if (!t) return (undo.value = null)
+  // 能撤销的提示多留一会儿，给人反应的时间
+  toastTimer = window.setTimeout(() => (toast.value = ''), undo.value ? 8000 : 2200)
+})
+async function runUndo() {
+  const fn = undo.value
+  undo.value = null
+  toast.value = ''
+  if (fn) await fn()
+}
+/** 把刚移进回收站的这些笔记放回原处 */
+async function restoreTrashed(paths: string[]) {
+  const items = await invoke<TrashItem[]>('vault_trash_list')
+  let last = ''
+  for (const p of paths) {
+    // 同一路径可能删过多次：列表从新到旧，取最新的那个
+    const it = items.find((x) => x.path === p)
+    if (it) last = await invoke<string>('vault_restore', { id: it.id, path: it.path })
+  }
+  await Promise.all([reload(), system.value === 'trash' ? loadTrash() : null])
+  if (last.endsWith('.md') && last in contents.value) showNote(last)
+  if (last) await nextTick(() => (toast.value = t('已放回原处')))
+}
+/** 移到回收站之后的提示，带撤销 */
+function trashedToast(text: string, paths: string[]) {
+  toast.value = ''
+  nextTick(() => {
+    undo.value = () => restoreTrashed(paths)
+    toast.value = text
+  })
+}
+// 提示条还在的时候按 ⌘Z 也能撤销（正在输入文字时不抢编辑器自己的撤销）
+window.addEventListener('keydown', (e) => {
+  if (!undo.value || !(e.metaKey || e.ctrlKey) || e.shiftKey || e.key.toLowerCase() !== 'z') return
+  const el = e.target as HTMLElement | null
+  if (el?.closest?.('input, textarea, select, [contenteditable="true"], .cm-editor')) return
+  e.preventDefault()
+  runUndo()
+})
 
 /** 菜单里的「导出为」：打开导出面板并选好格式 */
 function openExport(kind?: ExportKind) {
@@ -1113,7 +1156,7 @@ window.addEventListener('keydown', async (e) => {
   const title = titleOf(path)
   await trash(path)
   if (next && next in contents.value) showNote(next)
-  toast.value = t('「{title}」已移到回收站', { title })
+  trashedToast(t('「{title}」已移到回收站', { title }), [path])
 })
 
 function folderMenu(e: Entry) {
@@ -1204,7 +1247,7 @@ async function trashNotes(paths: string[]) {
   }
   for (const p of paths) await trash(p)
   picked.value = new Set()
-  toast.value = t('已把 {n} 篇笔记移到回收站', { n: paths.length })
+  trashedToast(t('已把 {n} 篇笔记移到回收站', { n: paths.length }), paths)
 }
 async function pinNotes(paths: string[], on: boolean) {
   const set = new Set(paths)
@@ -1334,7 +1377,7 @@ function noteMenu(path: string) {
         ]),
     ...(isLocked(path) ? [] : [{ text: t('版本历史…'), action: () => flushSave(path).then(() => (historyOf.value = path)) }]),
     '-',
-    { text: t('移到回收站'), action: () => trash(path) },
+    { text: t('移到回收站'), action: () => { const title = titleOf(path); trash(path).then(() => trashedToast(t('「{title}」已移到回收站', { title }), [path])) } },
   ])
 }
 
@@ -1818,7 +1861,12 @@ onMounted(async () => {
       @recovery="confirmRegenerateRecovery"
       @unlock="unlockAsk = () => {}"
     />
-    <Transition name="toast"><div v-if="toast" class="toast">{{ toast }}</div></Transition>
+    <Transition name="toast">
+      <div v-if="toast" class="toast">
+        <span>{{ toast }}</span>
+        <button v-if="undo" class="toast-undo" @click="runUndo">{{ $t('撤销') }}</button>
+      </div>
+    </Transition>
     <UpdateDialog v-if="updateState.phase !== 'idle'" />
     <HistorySheet
       v-if="historyOf && plainText(historyOf) !== undefined"
@@ -2391,11 +2439,15 @@ onMounted(async () => {
   font-size: 12px;
   color: var(--text-2);
 }
+.trash-bar > span:first-child { min-width: 0; overflow-wrap: anywhere; }
 .trash-bar .btn {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   color: var(--text);
+  /* 英文按钮文字更长：不换行、不被压窄 */
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .trash-bar .btn.danger {
   color: var(--accent);
@@ -2412,7 +2464,13 @@ onMounted(async () => {
   color: #fff;
   font-size: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(560px, calc(100vw - 40px));
 }
+.toast-undo { flex-shrink: 0; padding: 2px 10px; border-radius: 6px; font-size: 12.5px; font-weight: 600; color: #fff; background: rgba(255, 255, 255, 0.18); white-space: nowrap; }
+.toast-undo:hover { background: rgba(255, 255, 255, 0.3); }
 .toast-enter-active,
 .toast-leave-active {
   transition: opacity 0.2s, transform 0.2s;

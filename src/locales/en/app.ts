@@ -340,5 +340,7 @@ const dict: Record<string, string> = {
   '跳过这个版本': 'Skip This Version',
   '稍后': 'Later',
   '下载并安装': 'Download and Install',
+  '撤销': 'Undo',
+  '已放回原处': 'Put back',
 }
 export default dict
