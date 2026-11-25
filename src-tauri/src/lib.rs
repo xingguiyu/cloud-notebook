@@ -262,24 +262,27 @@ fn build_menu(app: &tauri::AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
 #[tauri::command]
 async fn set_language(app: tauri::AppHandle, choice: String) -> Result<(), String> {
     let dir = app.path().app_config_dir().map_err(|e| e.to_string())?;
-    if i18n::choose(&dir, &choice) {
-        #[cfg(desktop)]
-        {
+    #[cfg(desktop)]
+    {
+        if i18n::choose(&dir, &choice) {
             let handle = app.clone();
             let _ = app.run_on_main_thread(move || {
                 if let Ok(menu) = build_menu(&handle) {
                     let _ = handle.set_menu(menu);
                 }
             });
-            // 没改过的使用指南跟着换成新语言的
-            let _ = tauri::async_runtime::spawn_blocking(move || {
-                if let Ok(root) = vault::root(&app) {
-                    let _ = guide::switch_to(&root, i18n::current(), true);
-                }
-            })
-            .await;
         }
+        // 没改过的使用指南跟着界面语言走。每次启动也会走到这里（语言没变），
+        // 这样以前没换过来的指南（旧版本只认当前版本的内容）下次启动就会对上
+        let _ = tauri::async_runtime::spawn_blocking(move || {
+            if let Ok(root) = vault::root(&app) {
+                let _ = guide::switch_to(&root, i18n::current(), true);
+            }
+        })
+        .await;
     }
+    #[cfg(not(desktop))]
+    i18n::choose(&dir, &choice);
     Ok(())
 }
 

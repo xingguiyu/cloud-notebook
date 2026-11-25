@@ -99,14 +99,37 @@ pub fn install(root: &Path, lang: Lang) -> Result<usize, String> {
         }
         written += 1;
     }
+    // 记下这次装进去的每个文件的哈希
+    let manifest: std::collections::BTreeMap<&str, String> = FILES.iter().map(|(name, data)| (*name, sha(data))).collect();
+    let _ = fs::write(dir.join(MANIFEST), serde_json::to_vec(&manifest).unwrap_or_default());
     Ok(written)
 }
 
-/// 文件夹里的内容是不是和随应用附带的完全一样（没被改过，也没多出别的文件，隐藏的也算；只忽略 Finder 的 .DS_Store）
+/// 以前各个版本附带过的指南文件的哈希（一行一个），由 `scripts/guide-hashes.py` 维护
+const KNOWN: &str = include_str!("../guide/known-hashes.txt");
+/// 安装时在指南文件夹里记一份「装进去的是什么」，下次据此判断用户有没有改过
+const MANIFEST: &str = ".installed.json";
+
+fn sha(data: &[u8]) -> String {
+    use sha2::{Digest, Sha256};
+    Sha256::digest(data).iter().map(|b| format!("{b:02x}")).collect()
+}
+
+/// 这份指南是不是应用装进去之后就没被动过：每个文件都是某个版本附带的原样（当前版本、安装时记下的、
+/// 或历史版本清单里的），而且没多出别的文件（隐藏的也算，只忽略 Finder 的 .DS_Store 和我们自己的记录）。
+/// 只有这样才会在切换语言时自动替换它；用户改过或放了自己笔记的，一律不动。
 fn untouched(root: &Path, g: &Guide) -> bool {
     let dir = root.join(g.folder);
-    let same = g.files.iter().all(|(name, data)| fs::read(dir.join(name)).is_ok_and(|d| d == *data));
-    let count = |d: &Path| fs::read_dir(d).map_or(0, |r| r.flatten().filter(|e| e.file_name() != ".DS_Store").count());
+    let installed: std::collections::HashMap<String, String> =
+        fs::read(dir.join(MANIFEST)).ok().and_then(|b| serde_json::from_slice(&b).ok()).unwrap_or_default();
+    let original = |name: &str, bundled: &[u8]| {
+        fs::read(dir.join(name)).is_ok_and(|d| {
+            let h = sha(&d);
+            d == bundled || installed.get(name) == Some(&h) || KNOWN.lines().any(|k| k == h)
+        })
+    };
+    let same = g.files.iter().all(|(name, data)| original(name, data));
+    let count = |d: &Path| fs::read_dir(d).map_or(0, |r| r.flatten().filter(|e| e.file_name() != ".DS_Store" && e.file_name() != MANIFEST).count());
     // 六篇笔记加 assets 文件夹；assets 里是六张图
     same && count(&dir) == g.files.iter().filter(|(n, _)| !n.contains('/')).count() + 1 && count(&dir.join("assets")) == g.files.iter().filter(|(n, _)| n.contains('/')).count()
 }
@@ -193,6 +216,37 @@ mod tests {
         fs::write(root2.join(ZH.folder).join("我的笔记.md"), "x").unwrap();
         assert_eq!(switch_to(&root2, Lang::En, true).unwrap(), 0);
         assert!(root2.join(ZH.folder).join("我的笔记.md").exists());
+    }
+
+    /// 改了指南却没更新历史版本清单的话，换了设备（没有安装记录）的旧指南就认不出来了
+    #[test]
+    fn shipped_files_are_in_the_known_list() {
+        for g in [&ZH, &EN] {
+            for (name, data) in g.files {
+                assert!(KNOWN.lines().any(|k| k == sha(data)), "{name} 不在 known-hashes.txt 里，运行 python3 scripts/guide-hashes.py");
+            }
+        }
+    }
+
+    #[test]
+    fn a_guide_from_an_older_version_is_still_recognized_and_swapped() {
+        let root = std::env::temp_dir().join(format!("cn-guide-old-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root);
+        install(&root, Lang::Zh).unwrap();
+        // 模拟旧版本装的指南：内容和现在内置的不一样，但和安装记录对得上
+        let dir = root.join(ZH.folder);
+        let old = "# 欢迎使用 Cloud Notebook\n\n旧版本的文字。\n";
+        fs::write(dir.join(ZH.start), old).unwrap();
+        let mut manifest: std::collections::BTreeMap<String, String> = serde_json::from_slice(&fs::read(dir.join(MANIFEST)).unwrap()).unwrap();
+        manifest.insert(ZH.start.to_string(), sha(old.as_bytes()));
+        fs::write(dir.join(MANIFEST), serde_json::to_vec(&manifest).unwrap()).unwrap();
+        assert!(untouched(&root, &ZH));
+        assert_eq!(switch_to(&root, Lang::En, true).unwrap(), EN.files.len());
+        assert!(!dir.exists() && root.join(EN.folder).join(EN.start).exists());
+        // 同样的旧内容但没有记录、也不在历史清单里：算用户改过，不动
+        install(&root, Lang::Zh).unwrap();
+        fs::write(dir.join(ZH.start), "# 欢迎使用 Cloud Notebook\n\n我自己加了一段。\n").unwrap();
+        assert!(!untouched(&root, &ZH));
     }
 
     /// 指南里的站内链接和图片都要指向真实存在的文件；两种语言的篇数和结构要一致

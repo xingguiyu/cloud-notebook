@@ -150,7 +150,8 @@ superseded_by: 项目文档/shop/支付方案 v2.md
 1. 把 `src/locales/en/` 复制成 `src/locales/<语言代码>/`，翻译里面的值，键保持中文不变。
 2. 在 `src/i18n.ts` 里登记（`Lang`、`LANG_OPTIONS`、`DICTS`）。
 3. 翻译 `src-tauri/src/i18n.rs` 里的原生菜单；使用指南（`src-tauri/guide/`）可选。
-4. 运行 `python3 scripts/i18n-check.py`，它会报出缺译文的词条和对不上的变量。
+4. 改过指南的文字或图片的话，运行 `python3 scripts/guide-hashes.py`。
+5. 运行 `python3 scripts/i18n-check.py`，它会报出缺译文的词条和对不上的变量。
 
 同一个中文词在不同位置要译成不同的词时，键后面用 `||` 带上说明，比如 `置顶||分类`（分类名）和 `置顶`（动作）。
 

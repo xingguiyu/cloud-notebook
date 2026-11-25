@@ -152,7 +152,8 @@ Interface text is looked up by its Chinese source string: `t('移到回收站')`
 1. Copy `src/locales/en/` to `src/locales/<code>/` and translate the values. Keys stay in Chinese.
 2. Register it in `src/i18n.ts` (`Lang`, `LANG_OPTIONS`, `DICTS`).
 3. Translate the native menu in `src-tauri/src/i18n.rs` and, optionally, the guide notes in `src-tauri/guide/`.
-4. Run `python3 scripts/i18n-check.py`. It reports strings without a translation and placeholders that do not match.
+4. If you changed any guide note or image, run `python3 scripts/guide-hashes.py`.
+5. Run `python3 scripts/i18n-check.py`. It reports strings without a translation and placeholders that do not match.
 
 When one Chinese word needs two different translations, the key carries a context after `||`, for example `置顶||分类` ("Pinned" as a category) next to `置顶` ("Pin" as an action).
 
