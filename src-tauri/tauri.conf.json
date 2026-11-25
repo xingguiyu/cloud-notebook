@@ -1,0 +1,87 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "Cloud Notebook",
+  "version": "0.8.0",
+  "identifier": "com.qxsclass.cloudnotebook",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "pnpm dev",
+    "beforeBuildCommand": "pnpm build"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Cloud Notebook",
+        "width": 1200,
+        "height": 780,
+        "minWidth": 760,
+        "minHeight": 480,
+        "visible": false,
+        "transparent": true,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true,
+        "trafficLightPosition": {
+          "x": 18,
+          "y": 27
+        },
+        "windowEffects": {
+          "effects": [
+            "sidebar",
+            "mica"
+          ],
+          "state": "followsWindowActiveState"
+        },
+        "dragDropEnabled": true
+      }
+    ],
+    "security": {
+      "csp": {
+        "default-src": "'self'",
+        "script-src": "'self'",
+        "style-src": "'self' 'unsafe-inline'",
+        "img-src": "'self' data: blob: vault: http://vault.localhost https: http:",
+        "font-src": "'self' data:",
+        "media-src": "'self' blob: vault: http://vault.localhost",
+        "connect-src": "'self' ipc: http://ipc.localhost vault: http://vault.localhost blob: data: https://api.anthropic.com",
+        "frame-src": "'self' blob: data:",
+        "worker-src": "'self' blob:",
+        "object-src": "'none'",
+        "base-uri": "'none'",
+        "form-action": "'none'"
+      },
+      "dangerousDisableAssetCspModification": ["style-src"]
+    },
+    "macOSPrivateApi": true
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "app",
+      "dmg"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "android": {
+      "debugApplicationIdSuffix": ".debug"
+    },
+    "category": "Productivity",
+    "publisher": "Sichuan Yuejian Chuhua Culture Media Co., Ltd.",
+    "copyright": "© 2026 Sam Xing",
+    "shortDescription": "Markdown 笔记本",
+    "macOS": {
+      "hardenedRuntime": true,
+      "minimumSystemVersion": "11.0"
+    },
+    "iOS": {
+      "developmentTeam": "X3444CFQHD",
+      "minimumSystemVersion": "16.0"
+    }
+  }
+}

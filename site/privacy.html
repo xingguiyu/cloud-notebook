@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Privacy Policy · Cloud Notebook</title>
+<meta name="description" content="How Cloud Notebook handles your data.">
+<style>
+:root{--bg:#fbfaf8;--fg:#1f2328;--mut:#5b6470;--line:#e4e1db;--acc:#c0492f;--card:#fff}
+@media (prefers-color-scheme:dark){:root{--bg:#1c1d20;--fg:#e8e6e1;--mut:#a0a6ae;--line:#34363b;--acc:#e8806a;--card:#25272b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.7 -apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI",sans-serif}
+main{max-width:760px;margin:0 auto;padding:56px 20px 80px}
+h1{font-size:34px;line-height:1.2;margin:0 0 8px}
+h2{font-size:21px;margin:40px 0 8px}
+h3{font-size:16px;margin:0 0 4px}
+p,li{color:var(--fg)}
+.lead{font-size:18px;color:var(--mut);margin:0 0 28px}
+.mut{color:var(--mut);font-size:14px}
+a{color:var(--acc)}
+nav{display:flex;gap:18px;font-size:14px;margin-bottom:40px}
+nav b{margin-right:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:20px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+.card p{margin:0;color:var(--mut);font-size:14px}
+table{border-collapse:collapse;width:100%;font-size:15px;margin:12px 0}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--card)}
+hr{border:0;border-top:1px solid var(--line);margin:48px 0}
+footer{margin-top:56px;font-size:14px;color:var(--mut)}
+</style>
+</head>
+<body>
+<main>
+<nav><b><a href="index.html" style="color:inherit;text-decoration:none">Cloud Notebook</a></b><a href="index.html">Home</a><a href="privacy.html">Privacy Policy</a></nav>
+
+<h1>Privacy Policy</h1>
+<p class="mut">Effective date: November 25, 2026</p>
+<p class="lead">Cloud Notebook is a notes app that runs on your device. We do not operate a server that receives your notes, and the app contains no analytics, advertising or tracking.</p>
+
+<h2>1. What stays on your device</h2>
+<p>Your notes, attachments, tags, settings and search index are stored as files on your device. If you turn on Google Drive sync, the app's settings file and your API keys (the keys encrypted with your notes password) are synced together with your notes so that your other devices can use them; they go only to your own Drive. Items in the vault (keys, accounts, documents) are encrypted on your device with a password only you know. We cannot see any of this.</p>
+
+<h2>2. Google account data</h2>
+<p>If you choose to turn on Google Drive sync, Cloud Notebook asks you to sign in with Google and requests these permissions:</p>
+<table>
+<tr><th>Permission</th><th>What the app does with it</th></tr>
+<tr><td><code>drive.file</code></td><td>Creates, reads, updates and deletes the note files that Cloud Notebook itself stored in your Google Drive, in order to sync them between your devices. The app cannot access any other file in your Drive.</td></tr>
+<tr><td><code>email</code>, <code>openid</code></td><td>Reads your email address to show which Google account is connected. It is kept on your device only.</td></tr>
+</table>
+<ul>
+<li><b>Storage.</b> The sign-in tokens issued by Google are stored on your device, in the system keychain. They are never sent to us.</li>
+<li><b>Sharing.</b> We do not receive, sell, or share your Google user data with anyone. Data moves only between your device and Google's servers.</li>
+<li><b>No other use.</b> Google user data is not used for advertising, is not used to train AI models, and is not read by any person.</li>
+<li><b>Removal.</b> In Settings, click "退出" (Sign out) next to your Google account to delete the tokens from your device. You can also revoke access at <a href="https://myaccount.google.com/permissions">myaccount.google.com/permissions</a>. Files already synced stay in your own Google Drive, where you can delete them yourself.</li>
+</ul>
+<p>Cloud Notebook's use of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, including the Limited Use requirements.</p>
+
+<h2>3. Other services you may turn on</h2>
+<p>These are all optional and off until you configure them. When used, data goes directly from your device to the service you chose, under that service's own privacy policy.</p>
+<ul>
+<li><b>iCloud.</b> If you keep your notes folder in iCloud Drive, Apple syncs the files.</li>
+<li><b>AI features.</b> When you ask a question, the app sends the AI provider whose API key you entered (for example OpenAI, Anthropic or Google) what the question needs: your question and the earlier turns of that conversation, any text you selected, and either the current note (up to about 60,000 characters, with up to six of its images) or, when you ask across the whole library, the passages from your notes that best match the question. Encrypted notes and notes marked "This Mac only" are never included. Nothing is sent unless you use an AI feature.</li>
+<li><b>AI coding tools.</b> If you connect a coding agent through the built-in MCP server, it can read and write the document folders of the projects you bound, on this Mac. The app itself uploads nothing; what the agent does with what it reads is governed by that tool's own policy.</li>
+<li><b>Image hosting.</b> If you configure your own object storage for images, images you insert are uploaded to that storage.</li>
+</ul>
+
+<h2>4. What we collect</h2>
+<p>Nothing. The app has no account system of ours, no analytics and no crash reporting that sends data to us.</p>
+
+<h2>5. Children</h2>
+<p>Cloud Notebook is not directed at children under 13.</p>
+
+<h2>6. Changes</h2>
+<p>If this policy changes, the new version will be posted on this page with a new effective date.</p>
+
+<h2>7. Contact</h2>
+<p>Questions about this policy can be sent to the support email address shown on the Google sign-in screen for Cloud Notebook.</p>
+
+<hr>
+
+<h2>隐私政策（中文摘要）</h2>
+<ul>
+<li>笔记、附件、设置和搜索索引都保存在你的设备上；证件夹内容在本机加密，我们看不到。</li>
+<li>开启 Google Drive 同步时，应用申请 <code>drive.file</code>（只能访问本应用自己在你的 Drive 里创建的文件）和邮箱地址（用于显示已连接的账号）。登录凭据保存在本机钥匙串。</li>
+<li>我们不接收、不出售、不分享你的 Google 数据；不用于广告，不用于训练 AI 模型。数据只在你的设备和 Google 之间传输。</li>
+<li>在设置里点 Google 账号旁的"退出"即可删除本机凭据，也可以在 Google 账号的权限页面撤销授权。</li>
+<li>iCloud、AI 功能、图床都是可选的，使用时数据从你的设备直接发给你选择的服务商。</li>
+<li>使用 AI 时发送的内容：你的问题和这次对话的前文、选中的文字，以及当前笔记（最多约 6 万字和 6 张图片）或从整个笔记库里检索到的相关段落。加密笔记和标成"仅本机"的笔记不会发送。</li>
+<li>开启 Google Drive 同步后，应用的设置文件和用笔记密码加密过的 API Key 会随笔记一起同步到你自己的 Drive，供你的其他设备使用。</li>
+<li>应用没有统计、广告或追踪代码，我们不收集任何数据。</li>
+</ul>
+
+<footer>© 2026 Cloud Notebook · <a href="index.html">Home</a> · <a href="privacy.html">Privacy Policy</a></footer>
+</main>
+</body>
+</html>

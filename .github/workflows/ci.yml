@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    # The app links against macOS frameworks (Vision, LocalAuthentication), so tests run on macOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Translations are complete
+        run: python3 scripts/i18n-check.py
+
+      - name: Front-end tests
+        run: pnpm test
+
+      - name: Type check and bundle the front end
+        run: pnpm build
+
+      - name: Rust tests
+        working-directory: src-tauri
+        run: cargo test

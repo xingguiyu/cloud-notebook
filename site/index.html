@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cloud Notebook</title>
+<meta name="description" content="A Markdown notebook for macOS that keeps notes as plain files, with an encrypted vault for project keys and documents.">
+<style>
+:root{
+  --paper:#fff; --fog:#f4f4f6; --ink:#17181b; --slate:#676c76; --line:#e3e4e8;
+  --graphite:#26282d; --graphite-2:#32353b; --on-graphite:#d9dbe0; --on-graphite-2:#8d929c;
+  --coral:#e5484d; --coral-ink:#c93b40;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Hiragino Sans GB","Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root{--paper:#1b1c1f;--fog:#232428;--ink:#ecedf0;--slate:#9a9fa9;--line:#34363c;--coral-ink:#f2767a}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--sans);-webkit-font-smoothing:antialiased}
+html[data-lang=en] .zh,html[data-lang=zh] .en{display:none!important}
+a{color:var(--coral-ink)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--coral);outline-offset:3px;border-radius:6px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+.two>*,.win>*{min-width:0}
+code{font:.88em var(--mono)}
+.keyref em{white-space:nowrap}
+.keyref span{min-width:0}
+
+.top{display:flex;align-items:center;gap:22px;padding:22px 0;font-size:15px}
+.top .name{font-weight:700;margin-right:auto;display:flex;align-items:center;gap:10px}
+.top .dot{width:14px;height:14px;border-radius:4px;background:var(--coral)}
+.top a{color:var(--slate);text-decoration:none}
+.top a:hover{color:var(--ink)}
+.lang{font:inherit;font-size:14px;color:var(--slate);background:none;border:1px solid var(--line);border-radius:7px;padding:4px 10px;cursor:pointer}
+
+.hero{padding:64px 0 44px}
+.hero h1{font-size:clamp(38px,6.2vw,68px);line-height:1.04;letter-spacing:-.035em;font-weight:800;margin:0;max-width:15ch}
+html[data-lang=zh] .hero h1{letter-spacing:-.01em;line-height:1.16;max-width:13em}
+.hero p{font-size:20px;color:var(--slate);max-width:56ch;margin:22px 0 30px}
+.btns{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.btn{display:inline-block;padding:12px 20px;border-radius:10px;font-weight:600;font-size:16px;text-decoration:none}
+.btn.primary{background:var(--coral);color:#fff}
+.btn.primary:hover{background:#d13d42}
+.btn.ghost{color:var(--ink);border:1px solid var(--line)}
+.btn.ghost:hover{background:var(--fog)}
+.req{font-size:14px;color:var(--slate);margin-left:4px}
+
+/* 应用窗口示意 */
+.stage{background:linear-gradient(var(--paper) 0 34%,var(--graphite) 34% 100%);padding:0 0 72px}
+.win{display:grid;grid-template-columns:190px 250px 1fr;height:470px;border-radius:12px;overflow:hidden;background:#fff;color:#1d1d1f;
+  box-shadow:0 30px 70px -20px rgba(15,17,22,.45),0 0 0 1px rgba(15,17,22,.12);font-size:13px;line-height:1.5}
+.side{background:var(--graphite);color:var(--on-graphite);padding:14px 10px}
+.lights{display:flex;gap:7px;margin:0 0 18px 4px}
+.lights i{width:11px;height:11px;border-radius:50%;background:#4a4d54}
+.side h6{margin:14px 8px 4px;font-size:11px;font-weight:600;color:var(--on-graphite-2)}
+.side div{padding:5px 8px;border-radius:6px;display:flex;justify-content:space-between}
+.side div.on{background:var(--graphite-2);color:#fff}
+.side span{color:var(--on-graphite-2)}
+.list{background:#f6f6f8;border-right:1px solid #e3e4e8;padding:12px 10px;overflow:hidden}
+.search{background:#fff;border:1px solid #e3e4e8;border-radius:7px;padding:5px 9px;color:#9a9fa9;margin-bottom:10px}
+.row{background:#fff;border-radius:9px;padding:9px 11px;margin-bottom:8px;border:1px solid transparent}
+.row.on{border-color:var(--coral)}
+.row b{display:block;font-size:13px}
+.row p{margin:2px 0 0;color:#6b7079;font-size:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.row small{color:#9a9fa9;font-size:11px}
+.doc{padding:30px 44px;overflow:hidden}
+.doc h2{font-size:24px;margin:0 0 10px;letter-spacing:-.01em}
+.doc h3{font-size:15px;margin:18px 0 6px}
+.doc p{margin:0 0 8px;color:#33363c}
+.doc mark{background:#ffe9a8;border-radius:3px;padding:0 2px}
+.doc code{font:12px var(--mono);background:#f1f1f4;border-radius:4px;padding:1px 5px}
+.doc ul{margin:0;padding-left:18px;color:#33363c}
+.doc .todo{list-style:none;padding:0}
+.doc .todo li::before{content:"";display:inline-block;width:12px;height:12px;border:1.5px solid #b9bcc4;border-radius:3px;margin-right:8px;vertical-align:-2px}
+.doc .todo li.done{color:#9a9fa9;text-decoration:line-through}
+.doc .todo li.done::before{background:var(--coral);border-color:var(--coral)}
+.keyref{margin-top:16px;border:1px solid #e3e4e8;border-radius:9px;padding:10px 12px;display:flex;gap:12px;align-items:center}
+.keyref .ic{width:30px;height:30px;border-radius:7px;background:var(--graphite);color:#fff;display:grid;place-items:center;font:600 12px var(--mono)}
+.keyref small{color:#6b7079;display:block}
+.keyref em{margin-left:auto;font-style:normal;font-size:12px;color:#b45309;background:#fef3c7;border-radius:5px;padding:2px 7px}
+
+section.part{padding:84px 0;border-bottom:1px solid var(--line)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+.part h2{font-size:clamp(26px,3.4vw,36px);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px;max-width:18ch}
+html[data-lang=zh] .part h2{letter-spacing:0;max-width:14em}
+.part p{color:var(--slate);margin:0 0 12px;max-width:52ch}
+.part ul{margin:14px 0 0;padding-left:20px;color:var(--ink)}
+.part li{margin:5px 0}
+
+.art{background:var(--fog);border:1px solid var(--line);border-radius:12px;padding:20px 22px;font:13.5px/1.75 var(--mono);color:var(--ink);overflow-x:auto;white-space:pre}
+.art .dim{color:var(--slate)}
+
+.vault{background:var(--graphite);color:var(--on-graphite);border-radius:12px;padding:18px;font-size:14px}
+.vault .item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;background:var(--graphite-2);margin-bottom:8px}
+.vault .item b{color:#fff;font-weight:600}
+.vault .item code{margin-left:auto;font:12.5px var(--mono);color:var(--on-graphite-2)}
+.vault button{width:100%;margin-top:6px;font:600 14px var(--sans);color:#fff;background:var(--coral);border:0;border-radius:8px;padding:10px;cursor:pointer}
+.vault button:hover{background:#d13d42}
+.vault pre{margin:12px 0 0;padding:12px 14px;border-radius:8px;background:#1b1c20;color:#c9f0d2;font:12.5px/1.7 var(--mono);overflow-x:auto;max-height:0;opacity:0;padding-block:0;transition:max-height .3s ease,opacity .3s ease,padding .3s ease}
+.vault.open pre{max-height:140px;opacity:1;padding-block:12px}
+@media (prefers-reduced-motion:reduce){.vault pre{transition:none}html{scroll-behavior:auto}}
+
+.doclist{border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:14.5px;background:var(--paper)}
+.dl-head{display:flex;gap:10px;align-items:baseline;padding:12px 16px;background:var(--fog);border-bottom:1px solid var(--line);color:var(--slate);font-size:13px}
+.dl-head b{color:var(--ink);font:600 13.5px var(--mono)}
+.dl-row{display:grid;grid-template-columns:96px 1fr auto;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line)}
+.dl-row:last-child{border-bottom:0}
+.dl-row b{font-weight:600}
+.dl-row small{color:var(--slate);font-size:12.5px}
+.dl-row.old b{font-weight:400;color:var(--slate);text-decoration:line-through;text-decoration-color:var(--line)}
+.st{font-size:12px;color:var(--slate);border:1px solid var(--line);border-radius:6px;padding:1px 0;text-align:center}
+.st.cur{color:#fff;background:#2f9e6b;border-color:#2f9e6b}
+.st.dra{color:#9a5b00;background:#fdecc8;border-color:#fdecc8}
+
+table.flow{width:100%;border-collapse:collapse;font-size:15px}
+table.flow th,table.flow td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+table.flow th{font-weight:600;color:var(--slate);font-size:14px}
+table.flow td:first-child{font-weight:600;white-space:nowrap}
+
+.google{background:var(--fog)}
+.google .inner{max-width:720px}
+.get{text-align:left;padding:84px 0}
+.get h2{font-size:clamp(28px,4vw,44px);letter-spacing:-.025em;line-height:1.1;margin:0 0 18px}
+footer{padding:28px 0 48px;font-size:14px;color:var(--slate);display:flex;flex-wrap:wrap;gap:18px}
+footer a{color:var(--slate)}
+
+@media (max-width:860px){
+  .two{grid-template-columns:1fr;gap:28px}
+  .win{grid-template-columns:1fr;height:auto}
+  .side,.list{display:none}
+  .doc{padding:24px 20px}
+  .hero{padding:36px 0 32px}
+  section.part,.get{padding:56px 0}
+  .top a.hide-s{display:none}
+  .wrap{padding:0 16px}
+  .top{gap:14px}
+  .doc p{overflow-wrap:anywhere}
+  table.flow td:first-child{white-space:normal}
+  .hero p{font-size:18px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="top">
+    <span class="name"><i class="dot"></i>Cloud Notebook</span>
+    <a class="hide-s" href="#agents"><span class="en">AI documents</span><span class="zh">AI 文档</span></a>
+    <a class="hide-s" href="#vault"><span class="en">Vault</span><span class="zh">证件夹</span></a>
+    <a class="hide-s" href="#privacy"><span class="en">Your data</span><span class="zh">数据去向</span></a>
+    <a href="https://github.com/qxsclass/cloud-notebook">GitHub</a>
+    <button class="lang" id="lang" type="button" aria-label="Switch language">中文</button>
+  </nav>
+
+  <header class="hero">
+    <h1 class="en">Your notes, and the keys they talk about.</h1>
+    <h1 class="zh">笔记，和笔记里提到的那些密钥，放在一起。</h1>
+    <p class="en">Cloud Notebook is a Markdown notebook for macOS. Notes are plain files on your disk. API keys sit next to them in an encrypted vault, and the documents your coding agent writes land in the right project.</p>
+    <p class="zh">Cloud Notebook 是 macOS 上的 Markdown 笔记本。笔记是磁盘上的普通文件；API Key 加密保存在旁边的证件夹里；AI 写代码时产生的文档，自动归到对应的项目。</p>
+    <div class="btns">
+      <a class="btn primary" href="https://github.com/qxsclass/cloud-notebook/releases"><span class="en">Download for macOS</span><span class="zh">下载 macOS 版</span></a>
+      <a class="btn ghost" href="https://github.com/qxsclass/cloud-notebook"><span class="en">View source</span><span class="zh">查看源码</span></a>
+      <span class="req"><span class="en">Free and open source. macOS 11 or later.</span><span class="zh">免费开源，需要 macOS 11 或更高版本。</span></span>
+    </div>
+  </header>
+</div>
+
+<div class="stage">
+  <div class="wrap">
+    <div class="win" role="img" aria-label="Cloud Notebook window: sidebar, note list and a note with a linked API key">
+      <div class="side">
+        <div class="lights"><i></i><i></i><i></i></div>
+        <div class="on">全部笔记 <span>128</span></div>
+        <div>待办 <span>6</span></div>
+        <div>证件夹</div>
+        <h6>项目</h6>
+        <div>结算系统 <span>14</span></div>
+        <div>官网改版 <span>9</span></div>
+        <h6>标签</h6>
+        <div># 接口</div>
+        <div># 上线记录</div>
+        <div># 读书</div>
+      </div>
+      <div class="list">
+        <div class="search">搜索全部笔记 ⇧⌘F</div>
+        <div class="row on"><b>Stripe 接入</b><p>Webhook 要验签，测试环境和正式环境的密钥分开放。</p><small>今天 14:20</small></div>
+        <div class="row"><b>上线检查清单</b><p>数据库备份、回滚脚本、监控告警。</p><small>昨天</small></div>
+        <div class="row"><b>大模型选型</b><p>长文本用哪个便宜，函数调用哪个稳。</p><small>11 月 20 日</small></div>
+        <div class="row"><b>《打造第二大脑》</b><p>收集、整理、提炼、表达。</p><small>11 月 16 日</small></div>
+      </div>
+      <div class="doc">
+        <h2>Stripe 接入</h2>
+        <p>Webhook 必须<mark>验签</mark>，签名密钥在 <code>STRIPE_WEBHOOK_SECRET</code>。</p>
+        <h3>待办</h3>
+        <ul class="todo"><li class="done">测试环境跑通支付</li><li class="done">退款回调</li><li>正式环境密钥轮换</li></ul>
+        <h3>相关密钥</h3>
+        <div class="keyref"><span class="ic">sk</span><span><b>Stripe 正式环境</b><small>接口 API Key，结算系统</small></span><em>23 天后到期</em></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <section class="part">
+    <div class="two">
+      <div>
+        <h2 class="en">Notes are files. Open them with anything.</h2>
+        <h2 class="zh">笔记就是文件，用什么都能打开。</h2>
+        <p class="en">Each note is one <code>.md</code> file in a folder you pick. Folders in the app are folders on disk. If you stop using Cloud Notebook, your notes are already where you can find them.</p>
+        <p class="zh">每篇笔记是你选定文件夹里的一个 <code>.md</code> 文件，应用里的文件夹就是磁盘上的文件夹。哪天不用 Cloud Notebook 了，笔记还在原处。</p>
+        <ul>
+          <li class="en">Live editing or raw Markdown source</li><li class="zh">所见即所得，也可以切到 Markdown 源码</li>
+          <li class="en">Full-text search that handles Chinese</li><li class="zh">支持中文的全文搜索</li>
+          <li class="en">Export to PDF, Word and HTML</li><li class="zh">导出 PDF、Word、HTML</li>
+          <li class="en">Paste from Bear with headings and images intact</li><li class="zh">从 Bear 粘贴，标题和图片都保留</li>
+        </ul>
+      </div>
+<div class="art">Notes/
+├─ 结算系统/
+│  ├─ Stripe 接入.md
+│  ├─ 上线检查清单.md
+│  └─ assets/
+│     └─ webhook-flow.png
+├─ 官网改版/
+│  └─ 首页文案.md
+└─ 读书/
+   └─ 打造第二大脑.md      <span class="dim"># plain Markdown</span></div>
+    </div>
+  </section>
+
+  <section class="part" id="agents">
+    <div class="two">
+      <div class="doclist">
+        <div class="dl-head"><b>shop</b><span class="en">Project documents</span><span class="zh">项目文档</span></div>
+        <div class="dl-row"><span class="st cur"><span class="en">Current</span><span class="zh">当前有效</span></span><b class="en">Payment design v2</b><b class="zh">支付方案 v2</b><small>3 <span class="en">versions</span><span class="zh">个版本</span></small></div>
+        <div class="dl-row"><span class="st dra"><span class="en">Draft</span><span class="zh">草稿</span></span><b class="en">Release plan</b><b class="zh">上线计划</b><small>1 <span class="en">version</span><span class="zh">个版本</span></small></div>
+        <div class="dl-row old"><span class="st"><span class="en">Superseded</span><span class="zh">已被取代</span></span><b class="en">Payment design</b><b class="zh">支付方案</b><small class="en">by v2</small><small class="zh">被 v2 取代</small></div>
+        <div class="dl-row old"><span class="st"><span class="en">Archived</span><span class="zh">已归档</span></span><b class="en">Database migration notes</b><b class="zh">数据库迁移记录</b><small></small></div>
+      </div>
+      <div>
+        <h2 class="en">A home for the documents your coding agent writes.</h2>
+        <h2 class="zh">AI 写代码时产生的文档，有地方放了。</h2>
+        <p class="en">Coding agents leave plans, designs and specs all over a repository, and a month later nobody knows which one is still true. Cloud Notebook has an MCP server built in. The agent saves each document into the project's folder and says which older one it replaces.</p>
+        <p class="zh">AI 编程工具会在仓库里留下一堆计划、方案、设计文档，一个月后没人知道哪份还算数。Cloud Notebook 内置 MCP 服务，AI 把文档存进对应项目的文件夹，并说明它取代了哪一份。</p>
+        <ul>
+          <li class="en">Works with Claude Code, Cursor and other MCP clients</li><li class="zh">支持 Claude Code、Cursor 等 MCP 客户端</li>
+          <li class="en">The project is found from the repository you are working in</li><li class="zh">根据你正在工作的仓库自动找到项目</li>
+          <li class="en">Scan a repository and import the loose Markdown files it already has</li><li class="zh">扫描仓库，把已经散落的 Markdown 文件一次导入</li>
+          <li class="en">Version history with line-by-line comparison and restore</li><li class="zh">版本历史，可逐行对比和恢复</li>
+          <li class="en">The agent cannot read your other notes or the vault</li><li class="zh">AI 读不到你的其他笔记和证件夹</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="part" id="vault">
+    <div class="two">
+      <div class="vault" id="vaultDemo">
+        <div class="item"><b>Stripe</b><span class="en">API key</span><span class="zh">接口 API Key</span><code>sk_live_••••4f2a</code></div>
+        <div class="item"><b>Anthropic</b><span class="en">LLM key</span><span class="zh">大模型 Key</span><code>sk-ant-••••9c1d</code></div>
+        <div class="item"><b>Postgres</b><span class="en">Account</span><span class="zh">账号</span><code>••••••••</code></div>
+        <button type="button" id="envBtn"><span class="en">Copy as .env</span><span class="zh">复制为 .env</span></button>
+<pre aria-live="polite">STRIPE_API_KEY=sk_live_••••4f2a
+ANTHROPIC_API_KEY=sk-ant-••••9c1d
+ANTHROPIC_BASE_URL=https://api.anthropic.com</pre>
+      </div>
+      <div>
+        <h2 class="en">A vault built for project keys.</h2>
+        <h2 class="zh">为项目密钥准备的保险箱。</h2>
+        <p class="en">Paste a key and the vault recognizes the provider, fills in the base URL and links to its console. One click turns a project's keys into <code>.env</code> lines. You get a reminder before anything expires.</p>
+        <p class="zh">粘贴一个 Key，证件夹会识别服务商，填好接口地址和控制台链接。一键把项目里的密钥复制成 <code>.env</code>。到期之前会提醒你。</p>
+        <ul>
+          <li class="en">AES-256-GCM, key derived with Argon2id, unlocked with Touch ID</li><li class="zh">AES-256-GCM 加密，密钥由 Argon2id 派生，Touch ID 解锁</li>
+          <li class="en">Also holds IDs, passports and certificates, read from a photo on device</li><li class="zh">也能放身份证、护照、证书，拍照后在本机识别填表</li>
+          <li class="en">Your password never leaves the Mac</li><li class="zh">密码不离开这台 Mac</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="part" id="privacy">
+    <h2 class="en">Where your data goes</h2>
+    <h2 class="zh">数据去了哪里</h2>
+    <p class="en">By default, nowhere. Every connection below is off until you turn it on, and each one goes straight from your Mac to the service you chose.</p>
+    <p class="zh">默认哪里都不去。下面每一项都要你自己打开才生效，并且数据从你的 Mac 直接发给你选的服务。</p>
+    <table class="flow">
+      <tr><th><span class="en">Feature</span><span class="zh">功能</span></th><th><span class="en">What is sent</span><span class="zh">发送什么</span></th><th><span class="en">To</span><span class="zh">发给谁</span></th></tr>
+      <tr><td><span class="en">Sync</span><span class="zh">同步</span></td><td><span class="en">Your note files</span><span class="zh">笔记文件</span></td><td><span class="en">Your own Google Drive or iCloud Drive</span><span class="zh">你自己的 Google Drive 或 iCloud Drive</span></td></tr>
+      <tr><td><span class="en">AI assistant</span><span class="zh">AI 助手</span></td><td><span class="en">The text you select, when you ask</span><span class="zh">你提问时选中的文字</span></td><td><span class="en">The provider whose API key you entered</span><span class="zh">你填了 API Key 的那家服务商</span></td></tr>
+      <tr><td><span class="en">Image hosting</span><span class="zh">图床</span></td><td><span class="en">Images you insert</span><span class="zh">你插入的图片</span></td><td><span class="en">Your own S3-compatible storage</span><span class="zh">你自己的 S3 兼容存储</span></td></tr>
+      <tr><td><span class="en">Coding agent</span><span class="zh">AI 编程工具</span></td><td><span class="en">Project documents only, on this Mac</span><span class="zh">仅项目文档，在本机读写</span></td><td><span class="en">The agent you connected. Nothing is uploaded by the app.</span><span class="zh">你接入的那个工具。应用本身不上传任何内容。</span></td></tr>
+      <tr><td><span class="en">Analytics</span><span class="zh">统计</span></td><td colspan="2"><span class="en">None. The app has no analytics or tracking code.</span><span class="zh">没有。应用里没有任何统计或追踪代码。</span></td></tr>
+    </table>
+  </section>
+</div>
+
+<section class="part google">
+  <div class="wrap"><div class="inner">
+    <h2 class="en">How Cloud Notebook uses Google</h2>
+    <h2 class="zh">Cloud Notebook 如何使用 Google</h2>
+    <p class="en">Signing in with Google is optional and is used for one thing: syncing your notes between your devices through your own Google Drive.</p>
+    <p class="zh">Google 登录是可选的，只用于通过你自己的 Google Drive 在设备之间同步笔记。</p>
+    <ul>
+      <li class="en">The app asks for the <code>drive.file</code> permission. It can only see and change files that Cloud Notebook itself created in your Drive. It cannot read your other files.</li>
+      <li class="zh">应用申请 <code>drive.file</code> 权限，只能查看和修改它自己在你的 Drive 里创建的文件，读不到其他文件。</li>
+      <li class="en">It reads your email address to show which account is connected.</li>
+      <li class="zh">读取邮箱地址，用于显示已连接的账号。</li>
+      <li class="en">Notes travel directly between your device and Google Drive, never through a server run by us.</li>
+      <li class="zh">笔记只在你的设备和 Google Drive 之间传输，不经过我们的服务器。</li>
+    </ul>
+    <p><a href="privacy.html"><span class="en">Read the privacy policy</span><span class="zh">阅读隐私政策</span></a></p>
+  </div></div>
+</section>
+
+<div class="wrap">
+  <section class="get">
+    <h2 class="en">Free, open source, and yours to keep.</h2>
+    <h2 class="zh">免费、开源，数据归你。</h2>
+    <div class="btns">
+      <a class="btn primary" href="https://github.com/qxsclass/cloud-notebook/releases"><span class="en">Download for macOS</span><span class="zh">下载 macOS 版</span></a>
+      <a class="btn ghost" href="https://github.com/qxsclass/cloud-notebook"><span class="en">Star on GitHub</span><span class="zh">在 GitHub 上关注</span></a>
+    </div>
+  </section>
+  <footer>
+    <span>© 2026 Cloud Notebook</span>
+    <a href="privacy.html"><span class="en">Privacy policy</span><span class="zh">隐私政策</span></a>
+    <a href="https://github.com/qxsclass/cloud-notebook">GitHub</a>
+    <span>AGPL-3.0</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var root=document.documentElement,btn=document.getElementById('lang'),saved=null;
+  try{saved=localStorage.getItem('lang')}catch(e){}
+  function set(l){root.dataset.lang=l;root.lang=l==='zh'?'zh-CN':'en';btn.textContent=l==='zh'?'English':'中文'}
+  set(saved||(/^zh/i.test(navigator.language)?'zh':'en'));
+  btn.onclick=function(){var l=root.dataset.lang==='zh'?'en':'zh';set(l);try{localStorage.setItem('lang',l)}catch(e){}};
+  document.getElementById('envBtn').onclick=function(){document.getElementById('vaultDemo').classList.toggle('open')};
+})();
+</script>
+</body>
+</html>
