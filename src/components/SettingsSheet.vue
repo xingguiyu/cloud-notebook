@@ -15,6 +15,7 @@ import { THEMES } from '../themes'
 import { prefs, resetTypography, zoomBy } from '../prefs'
 import { keySyncAvailable, keysChanged, settingsChanged } from '../settingsSync'
 import { LANG_OPTIONS, langChoice, setLang, t, type LangChoice } from '../i18n'
+import { checkForUpdate, updateState } from '../updater'
 
 type Tab = 'general' | 'typography' | 'theme' | 'ai' | 'docs' | 'sync' | 'imagehost'
 const props = defineProps<{ initialTab?: Tab }>()
@@ -294,6 +295,14 @@ const home = (p: string) => p.replace(/^\/Users\/[^/]+/, '~')
           </select>
         </div>
         <p class="hint indent">{{ $t('切换语言会重新加载窗口。') }}</p>
+        <div class="form-row">
+          <label>{{ $t('软件更新') }}</label>
+          <div class="update-row">
+            <label class="check"><input v-model="prefs.autoUpdate" type="checkbox" /> {{ $t('自动检查新版本') }}</label>
+            <button class="btn small" :disabled="updateState.checking" @click="checkForUpdate(true)">{{ updateState.checking ? $t('正在检查…') : $t('立即检查') }}</button>
+          </div>
+        </div>
+        <p class="hint indent">{{ $t('当前版本 {v}。检查更新时会访问 GitHub，不发送任何笔记内容；更新包校验签名后才会安装。', { v: updateState.current }) }}</p>
         <div class="form-row">
           <label>{{ $t('新建笔记||设置项') }}</label>
           <div>
@@ -627,6 +636,7 @@ const home = (p: string) => p.replace(/^\/Users\/[^/]+/, '~')
 </template>
 
 <style>
+.update-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .badge-exp { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 5px; font-size: 11px; font-weight: 500; line-height: 16px; white-space: nowrap; vertical-align: 2px; color: #b45309; background: rgba(245, 165, 36, 0.16); }
 .mcp-code { margin: 6px 0; padding: 10px 12px; border-radius: 8px; background: var(--code-bg, var(--selected)); font: 12px/1.6 ui-monospace, 'SF Mono', Menlo, monospace; white-space: pre-wrap; word-break: break-all; }
 .mcp-project { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-top: 1px solid var(--border); }

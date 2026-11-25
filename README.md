@@ -2,7 +2,7 @@
 
 A Markdown notebook for macOS that keeps your notes as plain files, with an encrypted vault for project keys and documents built in.
 
-[Website](https://qxsclass.github.io/cloud-notebook/) · [简体中文](README.zh-CN.md)
+[Website](https://xingguiyu.github.io/cloud-notebook/) · [简体中文](README.zh-CN.md)
 
 ![Cloud Notebook](docs/images/screenshot-en.png)
 
@@ -44,12 +44,13 @@ Most note apps treat secrets as an afterthought. When you work on several projec
 **Sync and AI, both optional**
 
 - Sync through iCloud Drive, or through your own Google Drive (`drive.file` scope only; experimental). Without sync, everything stays on this Mac.
+- Updates itself from GitHub releases after verifying the signature; the check can be turned off.
 - AI assistant that uses your own API key: OpenAI, Anthropic, Gemini, DeepSeek, Qwen, OpenRouter and other OpenAI-compatible endpoints.
 - Upload images to your own S3-compatible storage.
 
 ## Install
 
-Download the latest `.dmg` from [Releases](https://github.com/qxsclass/cloud-notebook/releases). Builds are signed and notarized. Requires macOS 11 or later.
+Download the latest `.dmg` from [Releases](https://github.com/xingguiyu/cloud-notebook/releases). Builds are signed and notarized. Requires macOS 11 or later.
 
 ## Build from source
 
@@ -80,6 +81,17 @@ Pushing a tag builds the app on GitHub Actions and publishes it as a release, fo
 git tag v0.8.0 && git push origin v0.8.0
 ```
 
+The app updates itself: it reads `latest.json` from the newest GitHub release, downloads the update package, verifies its signature against the public key in `src-tauri/tauri.conf.json`, installs it and restarts. The notes shown in the update dialog are the changelog section of that version, so write `CHANGELOG.md` and `CHANGELOG.zh-CN.md` before releasing.
+
+Releases can also be cut from a Mac that has the signing certificate:
+
+```sh
+pnpm release           # build, sign, notarize; files land in release/v<version>/
+pnpm release:publish   # create the GitHub release from them
+```
+
+Either way the update packages are signed with a private key that is not in the repository. Locally it is read from `~/.tauri/cloud-notebook.key`; in CI from the `TAURI_SIGNING_PRIVATE_KEY` secret. Anyone who forks the project must generate their own pair (`pnpm tauri signer generate`) and replace the public key and the update address in `tauri.conf.json`. Losing the private key means installed copies can no longer be updated.
+
 The workflow (`.github/workflows/release.yml`) runs the tests, checks that the tag matches the app version, and uploads the `.dmg` files. To have the builds signed and notarized, add these repository secrets. Without them a tag only runs the tests; an unsigned build can be made by starting the workflow by hand.
 
 | Secret | Value |
@@ -90,6 +102,8 @@ The workflow (`.github/workflows/release.yml`) runs the tests, checks that the t
 | `APPLE_ID` | Apple ID used for notarization |
 | `APPLE_PASSWORD` | App-specific password for that Apple ID |
 | `APPLE_TEAM_ID` | Team ID |
+| `TAURI_SIGNING_PRIVATE_KEY` | Contents of the update-signing private key |
+| `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | Its password, if it has one |
 
 Every push and pull request also runs the tests (`.github/workflows/ci.yml`).
 
@@ -154,7 +168,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). Changes are listed in [CHANGELOG.md](CHA
 
 ## Privacy
 
-The app has no analytics and no account system. See the [privacy policy](https://qxsclass.github.io/cloud-notebook/privacy.html).
+The app has no analytics and no account system. See the [privacy policy](https://xingguiyu.github.io/cloud-notebook/privacy.html).
 
 ## License
 

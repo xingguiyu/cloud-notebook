@@ -1,6 +1,6 @@
 # Changelog
 
-Notable changes in each version. The format follows [Keep a Changelog](https://keepachangelog.com/).
+Notable changes in each version. 中文：[CHANGELOG.zh-CN.md](CHANGELOG.zh-CN.md)
 
 ## 0.8.0
 
@@ -36,6 +36,11 @@ First public release.
 - Google Drive with your own OAuth client (experimental).
 - AI assistant with your own API key for OpenAI, Anthropic, Gemini, DeepSeek, Qwen, OpenRouter and compatible endpoints.
 - Image hosting on your own S3-compatible storage.
+
+### Updates
+
+- Checks for new versions automatically and installs them after verifying their signature. Can be turned off in Settings → General.
+- After an update, the first launch shows what changed; it stays available under the Help menu.
 
 ### Security
 

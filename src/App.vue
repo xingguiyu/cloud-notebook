@@ -9,6 +9,8 @@ import { showWindowWhenReady } from './native/native'
 import FolderTree from './components/FolderTree.vue'
 import EmptyArt from './components/EmptyArt.vue'
 import HistorySheet from './components/HistorySheet.vue'
+import UpdateDialog from './components/UpdateDialog.vue'
+import { checkForUpdate, showWhatsNew, startUpdater, updateState } from './updater'
 // 首屏用不到，按需加载
 const MarkdownEditor = defineAsyncComponent(() => import('./components/MarkdownEditor.vue'))
 // 首屏用不到，按需加载
@@ -1482,6 +1484,7 @@ onMounted(async () => {
     refreshBindings()
   })
   startSettingsSync()
+  startUpdater()
   // 手机上 Google 登录的回调通过自定义 URL scheme 回到应用，转给 Rust
   onOpenUrl((urls) => urls.forEach((url) => invoke('google_oauth_callback', { url })))
   // 云端的改动靠定时拉取：每 2 分钟一次
@@ -1507,6 +1510,8 @@ onMounted(async () => {
     else if (payload === 'zoom-reset') zoom(0)
     else if (payload === 'settings') showSettings.value = true
     else if (payload === 'guide') openGuide()
+    else if (payload === 'check-update') checkForUpdate(true)
+    else if (payload === 'whats-new') showWhatsNew()
     else if (payload === 'toggle-info') showInfo.value = !showInfo.value
     else if (payload === 'ask-ai') showAi.value = !showAi.value
     else if (payload === 'lock-now') lockNow()
@@ -1814,6 +1819,7 @@ onMounted(async () => {
       @unlock="unlockAsk = () => {}"
     />
     <Transition name="toast"><div v-if="toast" class="toast">{{ toast }}</div></Transition>
+    <UpdateDialog v-if="updateState.phase !== 'idle'" />
     <HistorySheet
       v-if="historyOf && plainText(historyOf) !== undefined"
       :note-path="historyOf"

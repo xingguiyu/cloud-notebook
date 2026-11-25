@@ -64,6 +64,17 @@ jobs:
           pnpm test
           (cd src-tauri && cargo test)
 
+      # The same text is shown in the app's update dialog (English, then Chinese after a <!--zh--> line)
+      - name: Release notes from the changelog
+        id: notes
+        run: |
+          version=$(python3 -c "import json; print(json.load(open('src-tauri/tauri.conf.json'))['version'])")
+          {
+            echo 'body<<NOTES_EOF'
+            python3 scripts/latest-json.py --notes "$version"
+            echo 'NOTES_EOF'
+          } >> "$GITHUB_OUTPUT"
+
       - name: Build, sign and notarize
         if: env.HAS_CERTIFICATE == 'true'
         uses: tauri-apps/tauri-action@v0
@@ -75,13 +86,16 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          # Signs the update packages; the app verifies them with the public key in tauri.conf.json
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: Cloud Notebook ${{ github.ref_name }}
-          releaseBody: See the commit history for what changed in this version.
+          releaseBody: ${{ steps.notes.outputs.body }}
           releaseDraft: false
           prerelease: false
-          args: --target ${{ matrix.target }}
+          args: --target ${{ matrix.target }} --config {"bundle":{"createUpdaterArtifacts":true}}
 
       # A vault app should not ship unsigned by accident: without the signing secrets, a tag only runs the
       # tests. Start the workflow by hand (Actions → Release → Run workflow) to get an unsigned build.

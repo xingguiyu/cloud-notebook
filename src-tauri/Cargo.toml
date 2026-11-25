@@ -4,7 +4,7 @@ version = "0.8.0"
 description = "Markdown notebook with an encrypted vault and project documents for AI coding"
 authors = ["Sam Xing"]
 license = "AGPL-3.0-only"
-repository = "https://github.com/qxsclass/cloud-notebook"
+repository = "https://github.com/xingguiyu/cloud-notebook"
 edition = "2024"
 rust-version = "1.90"
 
@@ -48,6 +48,8 @@ tauri-plugin-notification = "2"
 dirs = "7"
 sys-locale = "0.3.2"
 unicode-normalization = "0.1.26"
+tauri-plugin-updater = "2.14.1"
+tauri-plugin-process = "2.4.0"
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"

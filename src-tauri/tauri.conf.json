@@ -51,7 +51,9 @@
         "base-uri": "'none'",
         "form-action": "'none'"
       },
-      "dangerousDisableAssetCspModification": ["style-src"]
+      "dangerousDisableAssetCspModification": [
+        "style-src"
+      ]
     },
     "macOSPrivateApi": true
   },
@@ -82,6 +84,15 @@
     "iOS": {
       "developmentTeam": "X3444CFQHD",
       "minimumSystemVersion": "16.0"
+    },
+    "createUpdaterArtifacts": false
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEMzREIzRjYzRUE0MkM0NjUKUldSbHhFTHFZei9idzVEUURGWDltQUpGNVZDa1pUNVhnQjVSck95TW9tdEdzRjdRQnRNWFZlUVAK",
+      "endpoints": [
+        "https://github.com/xingguiyu/cloud-notebook/releases/latest/download/latest.json"
+      ]
     }
   }
 }

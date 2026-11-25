@@ -155,6 +155,7 @@ fn build_menu(app: &tauri::AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
                 true,
                 &[
                     &PredefinedMenuItem::about(app, None, Some(AboutMetadata::default()))?,
+                    &MenuItem::with_id(app, "check-update", &i18n::tr("检查更新…"), true, None::<&str>)?,
                     &PredefinedMenuItem::separator(app)?,
                     &settings,
                     &PredefinedMenuItem::separator(app)?,
@@ -242,23 +243,41 @@ fn build_menu(app: &tauri::AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
                     &PredefinedMenuItem::fullscreen(app, None)?,
                 ],
             )?,
-            &Submenu::with_items(app, &i18n::tr("帮助"), true, &[&MenuItem::with_id(app, "guide", &i18n::tr("使用指南"), true, None::<&str>)?])?,
+            &Submenu::with_items(
+                app,
+                &i18n::tr("帮助"),
+                true,
+                &[
+                    &MenuItem::with_id(app, "guide", &i18n::tr("使用指南"), true, None::<&str>)?,
+                    &MenuItem::with_id(app, "whats-new", &i18n::tr("这个版本的更新内容"), true, None::<&str>)?,
+                ],
+            )?,
         ],
     )
 }
 
 /// 前端告诉原生部分用哪种语言（`system` / `zh` / `en`）；语言变了就重建菜单栏
+/// 这是个 async 命令：不带 async 的命令在主线程上跑，而换指南要读写十几个文件（笔记库在 iCloud 里时可能很慢），
+/// 主线程一被占住，整个窗口就卡死了。菜单必须在主线程上改，单独派过去。
 #[tauri::command]
-fn set_language(app: tauri::AppHandle, choice: String) -> Result<(), String> {
+async fn set_language(app: tauri::AppHandle, choice: String) -> Result<(), String> {
     let dir = app.path().app_config_dir().map_err(|e| e.to_string())?;
     if i18n::choose(&dir, &choice) {
         #[cfg(desktop)]
         {
-            app.set_menu(build_menu(&app).map_err(|e| e.to_string())?).map_err(|e| e.to_string())?;
+            let handle = app.clone();
+            let _ = app.run_on_main_thread(move || {
+                if let Ok(menu) = build_menu(&handle) {
+                    let _ = handle.set_menu(menu);
+                }
+            });
             // 没改过的使用指南跟着换成新语言的
-            if let Ok(root) = vault::root(&app) {
-                let _ = guide::switch_to(&root, i18n::current(), true);
-            }
+            let _ = tauri::async_runtime::spawn_blocking(move || {
+                if let Ok(root) = vault::root(&app) {
+                    let _ = guide::switch_to(&root, i18n::current(), true);
+                }
+            })
+            .await;
         }
     }
     Ok(())
@@ -300,6 +319,8 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
         .manage(google::GoogleState::default())
         .manage(pdf::PdfState::default())
         .manage(ai::ChatState::default())

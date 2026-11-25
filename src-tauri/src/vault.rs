@@ -81,7 +81,7 @@ pub async fn vault_info(app: AppHandle) -> Result<VaultInfo, String> {
 /// 切换笔记库位置。`move_notes` 为真时把现有笔记一起搬过去。
 /// 文件监听绑定在旧目录上，切换后重启应用。
 #[tauri::command]
-pub fn vault_set_root(app: AppHandle, path: String, move_notes: bool) -> Result<(), String> {
+pub async fn vault_set_root(app: AppHandle, path: String, move_notes: bool) -> Result<(), String> {
     let old = root(&app)?;
     let new = PathBuf::from(&path);
     if new == old {

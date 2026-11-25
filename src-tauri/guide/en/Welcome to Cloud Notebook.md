@@ -10,7 +10,7 @@ Cloud Notebook is a notebook for writing Markdown. These guide notes help you ge
 
 **Notes live next to the things they mention.** When you work on a project, your notes mention API keys, accounts and certificates. These are stored encrypted in the Vault right beside your notes, so you don't have to dig through another app.
 
-**Offline by default.** Sync, AI and image hosting only work after you turn them on yourself, and data goes straight from this computer to the service you choose. The app has no account system and no analytics code.
+**Your content stays on this computer by default.** Sync, AI and image hosting only work after you turn them on yourself, and data goes straight from this computer to the service you choose. The app has no account system and no analytics code. The one thing it does online on its own is check for a new version, which you can turn off in "Settings → General".
 
 **A home for documents written for AI.** Coding with AI leaves behind a lot of plans and proposals. They can be saved straight into the folder of the project they belong to, marked to show which one is current.
 

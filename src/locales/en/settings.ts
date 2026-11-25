@@ -285,5 +285,10 @@ const dict: Record<string, string> = {
   '国内可直连。国际站请把地址改成 dashscope-intl.aliyuncs.com。图片需选带 vl 的模型。':
     'Directly reachable from mainland China. For the international site, change the address to dashscope-intl.aliyuncs.com. For images, pick a model with “vl” in its name.',
   '任何兼容 OpenAI 接口的服务，例如本机的 Ollama、LM Studio。': 'Any service compatible with the OpenAI API, such as Ollama or LM Studio on this Mac.',
+  '软件更新': 'Updates',
+  '自动检查新版本': 'Check for new versions automatically',
+  '正在检查…': 'Checking…',
+  '立即检查': 'Check Now',
+  '当前版本 {v}。检查更新时会访问 GitHub，不发送任何笔记内容；更新包校验签名后才会安装。': 'Current version {v}. Checking contacts GitHub and sends none of your notes; an update is installed only after its signature is verified.',
 }
 export default dict

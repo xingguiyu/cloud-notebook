@@ -56,6 +56,7 @@ In "Settings → Image Hosting", enter your own object storage (S3, Alibaba Clou
 | AI assistant | The relevant text when you ask a question | The provider whose key you entered |
 | Image hosting | The images you choose to upload | Your own object storage |
 | AI coding tools | Project documents, read and written only on this Mac | The app itself uploads nothing |
+| Update checks | An ordinary web request with no note content | GitHub (can be turned off in Settings) |
 | Analytics | None | None |
 
 #Cloud-Notebook/Guide

@@ -109,6 +109,8 @@ pub fn tr_for(lang: Lang, zh: &str) -> String {
         "实际大小" => "Actual Size",
         "正文" => "Body",
         "使用指南" => "User Guide",
+        "检查更新…" => "Check for Updates…",
+        "这个版本的更新内容" => "What’s New in This Version",
         other => other,
     };
     en.to_string()

@@ -2,7 +2,7 @@
 
 macOS 上的 Markdown 笔记本。笔记是你磁盘上的普通文件，内置加密的「项目 / 证件夹」，用来保存项目密钥和证件。
 
-[官网](https://qxsclass.github.io/cloud-notebook/) · [English](README.md)
+[官网](https://xingguiyu.github.io/cloud-notebook/) · [English](README.md)
 
 ![Cloud Notebook](docs/images/screenshot-zh.png)
 
@@ -42,12 +42,13 @@ macOS 上的 Markdown 笔记本。笔记是你磁盘上的普通文件，内置�
 **同步与 AI（都可以不开）**
 
 - 通过 iCloud Drive 同步，或通过你自己的 Google Drive 同步（只申请 `drive.file` 权限，实验性功能）。不开同步时，所有内容只在本机。
+- 从 GitHub Release 自动更新，安装前校验签名；自动检查可以关闭。
 - AI 助手使用你自己的 API Key：OpenAI、Anthropic、Gemini、DeepSeek、通义千问、OpenRouter，以及其他 OpenAI 兼容接口。
 - 图片可以上传到你自己的 S3 兼容存储。
 
 ## 安装
 
-到 [Releases](https://github.com/qxsclass/cloud-notebook/releases) 下载最新的 `.dmg`。安装包已签名并通过 Apple 公证，需要 macOS 11 或更高版本。
+到 [Releases](https://github.com/xingguiyu/cloud-notebook/releases) 下载最新的 `.dmg`。安装包已签名并通过 Apple 公证，需要 macOS 11 或更高版本。
 
 ## 从源码构建
 
@@ -78,6 +79,17 @@ cd src-tauri && cargo test      # Rust 测试
 git tag v0.8.0 && git push origin v0.8.0
 ```
 
+应用会自己更新：它读取最新一个 GitHub Release 里的 `latest.json`，下载更新包，用 `src-tauri/tauri.conf.json` 里的公钥校验签名，安装并重启。更新弹窗里显示的说明取自更新日志里这个版本的一节，所以发版前要先写好 `CHANGELOG.md` 和 `CHANGELOG.zh-CN.md`。
+
+也可以在装有签名证书的 Mac 上本地发版：
+
+```sh
+pnpm release           # 构建、签名、公证，产物在 release/v<版本>/
+pnpm release:publish   # 用这些文件创建 GitHub Release
+```
+
+两种方式都要用一把不在仓库里的私钥给更新包签名。本地从 `~/.tauri/cloud-notebook.key` 读取，CI 里从 `TAURI_SIGNING_PRIVATE_KEY` 这个 Secret 读取。分叉这个项目的人需要自己生成一对密钥（`pnpm tauri signer generate`），并替换 `tauri.conf.json` 里的公钥和更新地址。私钥丢了，已经装出去的版本就再也无法自动更新。
+
 流水线（`.github/workflows/release.yml`）会跑测试、检查 tag 和应用版本号一致，然后上传 `.dmg`。想让安装包带签名并通过 Apple 公证，在仓库的 Secrets 里加上下面几项。没配的时候推 tag 只跑测试、不出包；需要未签名的包可以在 Actions 页面手动运行这条流水线。
 
 | Secret | 内容 |
@@ -88,6 +100,8 @@ git tag v0.8.0 && git push origin v0.8.0
 | `APPLE_ID` | 用于公证的 Apple ID |
 | `APPLE_PASSWORD` | 这个 Apple ID 的 App 专用密码 |
 | `APPLE_TEAM_ID` | Team ID |
+| `TAURI_SIGNING_PRIVATE_KEY` | 更新签名私钥的内容 |
+| `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | 私钥的密码（有的话） |
 
 每次推送和 PR 也会自动跑测试（`.github/workflows/ci.yml`）。
 
@@ -152,7 +166,7 @@ superseded_by: 项目文档/shop/支付方案 v2.md
 
 ## 隐私
 
-应用没有统计代码，也没有账号系统。见[隐私政策](https://qxsclass.github.io/cloud-notebook/privacy.html)。
+应用没有统计代码，也没有账号系统。见[隐私政策](https://xingguiyu.github.io/cloud-notebook/privacy.html)。
 
 ## 许可证
 

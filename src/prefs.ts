@@ -28,6 +28,7 @@ export interface Prefs {
   aiBaseUrls: Record<string, string> // 用户改过的接口地址
   zoom: number // 编辑区缩放，1 为 100%（⌘+ / ⌘-）
   darkSidebar: boolean // 浅色外观下侧边栏用深空灰
+  autoUpdate: boolean // 自动检查新版本
   noteSort: 'modified' | 'modified-asc' | 'created' | 'title' | 'words' | 'manual' // 笔记列表排序
 }
 
@@ -44,6 +45,7 @@ export const DEFAULT_PREFS: Prefs = {
   noteSort: 'modified',
   zoom: 1,
   darkSidebar: true,
+  autoUpdate: true,
   theme: 'coral',
   appearance: 'system',
   autoLockMinutes: 5,
