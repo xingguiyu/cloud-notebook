@@ -22,6 +22,18 @@ STAGE="$ROOT/release/mirror"
 rm -rf "$STAGE" && mkdir -p "$STAGE/download"
 cp -R "$ROOT/site/." "$STAGE/"
 
+# 国内镜像要在页脚显示备案信息：把 scripts/mirror-footer.html 插到每个页面的 <!--beian--> 处
+python3 - "$STAGE" "$ROOT/scripts/mirror-footer.html" <<'PY'
+import glob, os, re, sys
+stage, snippet = sys.argv[1], sys.argv[2]
+block = re.sub(r'^<!--.*?-->\s*', '', open(snippet, encoding='utf-8').read(), flags=re.S).strip()
+for f in glob.glob(os.path.join(stage, '*.html')):
+    html = open(f, encoding='utf-8').read()
+    if '<!--beian-->' not in html:
+        sys.exit(f'{os.path.basename(f)} 里没有 <!--beian--> 标记，备案信息插不进去')
+    open(f, 'w', encoding='utf-8').write(html.replace('<!--beian-->', block))
+PY
+
 if [ -f "$OUT/latest.json" ]; then
   cp "$OUT"/*.dmg "$OUT"/*.app.tar.gz "$STAGE/download/"
   python3 - "$OUT/latest.json" "$STAGE/download" "$SITE_URL" "$VERSION" <<'PY'
