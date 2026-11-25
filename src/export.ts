@@ -23,8 +23,13 @@ function toDataUrl(blob: Blob) {
   })
 }
 
-/** Markdown 转 HTML 片段；本地图片内嵌成 data URL，导出的文件单独拿走也能看 */
-export async function renderHtml(md: string, notePath: string) {
+/**
+ * Markdown 转 HTML 片段。本地图片有两种处理：
+ * - `link`（默认）：指向应用内的图片地址，由页面自己去加载。预览、PDF、打印都用它，快，长文档也不卡。
+ * - `inline`：读出来内嵌成 data URL。只有导出成单独的 HTML 文件、发布到 Google 文档时才需要，
+ *   因为那份内容离开应用后要能自己显示图片；图片多而大时会慢，生成的内容也很大。
+ */
+export async function renderHtml(md: string, notePath: string, images: 'link' | 'inline' = 'link') {
   const html = String(
     await unified().use(remarkParse).use(remarkGfm).use(remarkRehype).use(rehypeHighlight, { detect: false }).use(rehypeSafe, { remoteImages: true }).use(rehypeStringify).process(md),
   )
@@ -33,9 +38,17 @@ export async function renderHtml(md: string, notePath: string) {
     [...doc.querySelectorAll('img')].map(async (img) => {
       const src = img.getAttribute('src') ?? ''
       if (/^[a-z][a-z0-9+.-]*:/i.test(src)) return
+      const url = resolveAsset(notePath, src)
+      if (images === 'link') {
+        img.setAttribute('src', url)
+        return
+      }
       try {
-        img.src = await toDataUrl(await (await fetch(resolveAsset(notePath, src))).blob())
-      } catch {}
+        img.src = await toDataUrl(await (await fetch(url)).blob())
+      } catch {
+        // 读不到就退回成链接，至少在应用里还能显示
+        img.setAttribute('src', url)
+      }
     }),
   )
   return doc.body.firstElementChild!.innerHTML
@@ -159,7 +172,7 @@ export async function exportNote(kind: ExportKind, notePath: string, source: str
   else if (kind === 'inline') await invoke('export_write', { path, content: await inlineImages(md, notePath) })
   else if (kind === 'docx') await invoke('export_docx', { note: notePath, markdown: md, path })
   else {
-    const html = documentHtml(title, await renderHtml(md, notePath), opts.template)
+    const html = documentHtml(title, await renderHtml(md, notePath, 'inline'), opts.template)
     await invoke('export_write', { path, content: html })
   }
   return true

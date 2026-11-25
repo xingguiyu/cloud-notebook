@@ -329,7 +329,8 @@ pub fn run() {
         .register_asynchronous_uri_scheme_protocol("vault", |ctx, req, responder| {
             let app = ctx.app_handle().clone();
             let path = req.uri().path().to_string();
-            std::thread::spawn(move || responder.respond(vault::serve(&app, &path)));
+            let origin = req.headers().get("origin").and_then(|v| v.to_str().ok()).map(String::from);
+            std::thread::spawn(move || responder.respond(vault::serve(&app, &path, origin.as_deref())));
         })
         .setup(|app| {
             #[cfg(desktop)]

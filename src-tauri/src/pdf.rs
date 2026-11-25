@@ -62,7 +62,7 @@ async fn load_hidden(
         .map_err(|e| e.to_string())?;
 
     let loaded =
-        tauri::async_runtime::spawn_blocking(move || rx.recv_timeout(Duration::from_secs(20)))
+        tauri::async_runtime::spawn_blocking(move || rx.recv_timeout(Duration::from_secs(90)))
             .await
             .map_err(|e| e.to_string())?;
     if loaded.is_err() {
@@ -127,7 +127,7 @@ fn wait_for_file(path: &str) -> Result<(), String> {
         } else if size > 0 && stable_since.elapsed() > Duration::from_secs(1) {
             return Ok(());
         }
-        if start.elapsed() > Duration::from_secs(60) {
+        if start.elapsed() > Duration::from_secs(180) {
             return Err("生成 PDF 超时".into());
         }
     }

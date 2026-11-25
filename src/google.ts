@@ -36,7 +36,7 @@ export const google = {
   setTwoWay: (note: string, enabled: boolean) => invoke<void>('google_doc_set_two_way', { note, enabled }),
   moveDoc: (from: string, to: string) => invoke<void>('google_doc_move', { from, to }),
   async publish(note: string, md: string, twoWay?: boolean) {
-    const html = await renderHtml(md, note)
+    const html = await renderHtml(md, note, 'inline')
     return invoke<string>('google_publish_doc', { note, title: noteTitle(note, md) || t('未命名'), html, twoWay })
   },
 }

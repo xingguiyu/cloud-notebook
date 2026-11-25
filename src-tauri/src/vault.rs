@@ -556,7 +556,9 @@ pub fn percent_decode(s: &str) -> String {
 }
 
 /// `vault://localhost/<相对路径>`：让编辑器里的相对图片路径能直接显示
-pub fn serve(app: &AppHandle, uri_path: &str) -> tauri::http::Response<Vec<u8>> {
+/// `origin` 是发起请求的页面。应用自己的页面用脚本读图片（内嵌进导出的 HTML、发给 AI）属于跨源请求，
+/// 要在响应里点名允许，否则浏览器不把内容交给脚本；别的来源一律不给。
+pub fn serve(app: &AppHandle, uri_path: &str, origin: Option<&str>) -> tauri::http::Response<Vec<u8>> {
     let rel = percent_decode(uri_path.trim_start_matches('/'));
     let not_found = || {
         tauri::http::Response::builder()
@@ -588,7 +590,11 @@ pub fn serve(app: &AppHandle, uri_path: &str) -> tauri::http::Response<Vec<u8>> 
         _ => "application/octet-stream",
     };
     // 这里只供图片用。SVG 里可以带脚本：万一被当成页面直接打开，用沙盒和「什么都不许加载」的策略让它跑不起来
-    tauri::http::Response::builder()
+    let mut response = tauri::http::Response::builder();
+    if let Some(o) = origin.filter(|o| APP_ORIGINS.contains(o)) {
+        response = response.header("Access-Control-Allow-Origin", o).header("Vary", "Origin");
+    }
+    response
         .header("Content-Type", mime)
         .header("X-Content-Type-Options", "nosniff")
         // 图片文件可能被替换（同步、外部编辑、指南更新）：让界面每次都来问，不用内存里的旧图
@@ -597,6 +603,9 @@ pub fn serve(app: &AppHandle, uri_path: &str) -> tauri::http::Response<Vec<u8>> 
         .body(bytes)
         .unwrap()
 }
+
+/// 应用主窗口的来源（macOS / Linux 是 tauri://localhost，Windows 是 http(s)://tauri.localhost）
+const APP_ORIGINS: [&str; 3] = ["tauri://localhost", "http://tauri.localhost", "https://tauri.localhost"];
 
 /// 这个路径相比上次看到时，内容有没有变（看修改时间和大小；新出现、消失也算变）。
 /// 文件系统事件里混着大量只改元数据的通知，用它筛掉。
