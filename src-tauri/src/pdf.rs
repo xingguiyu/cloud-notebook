@@ -32,6 +32,9 @@ fn paper(size: &str) -> (f64, f64) {
     }
 }
 
+/// 页面里的图片都就绪后，把文档标题改成这个值
+const IMAGES_READY: &str = "cloud-notebook-images-ready";
+
 /// 加载排版页面到一个隐藏 WebView，返回窗口
 async fn load_hidden(
     app: &AppHandle,
@@ -45,12 +48,22 @@ async fn load_hidden(
     }
     let (tx, rx) = std::sync::mpsc::channel::<()>();
     let tx = Mutex::new(Some(tx));
+    let (img_tx, img_rx) = std::sync::mpsc::channel::<()>();
+    let img_tx = Mutex::new(Some(img_tx));
     let url = "cnexport://localhost/doc"
         .parse()
         .map_err(|e: url::ParseError| e.to_string())?;
     let win = WebviewWindowBuilder::new(app, label, WebviewUrl::CustomProtocol(url))
         .visible(false)
         .inner_size(paper(paper_size).0, paper(paper_size).1)
+        // 页面把标题改成约定的值，表示图片都已经加载并解码完（见下面注入的脚本）
+        .on_document_title_changed(move |_, title| {
+            if title == IMAGES_READY {
+                if let Some(tx) = img_tx.lock().unwrap().take() {
+                    let _ = tx.send(());
+                }
+            }
+        })
         .on_page_load(move |_, payload| {
             if matches!(payload.event(), tauri::webview::PageLoadEvent::Finished) {
                 if let Some(tx) = tx.lock().unwrap().take() {
@@ -69,8 +82,17 @@ async fn load_hidden(
         let _ = win.close();
         return Err("排版页面加载超时".into());
     }
-    // 给字体和内嵌图片一点解码时间
-    tokio_sleep(Duration::from_millis(400)).await;
+    // 页面「加载完成」不等于图片能画出来：大图是异步解码的，这时就打印会得到一份没有图片的 PDF。
+    // 让页面等每张图加载并解码完，再用改标题的方式通知这边；等不到就照常继续，不让导出卡住。
+    let _ = win.eval(&format!(
+        "Promise.all(Array.from(document.images).map(function (i) {{ \
+           var loaded = i.complete ? Promise.resolve() : new Promise(function (r) {{ i.addEventListener('load', r); i.addEventListener('error', r); }}); \
+           return loaded.then(function () {{ return i.decode ? i.decode().catch(function () {{}}) : null; }}); \
+         }})).catch(function () {{}}).then(function () {{ document.title = '{IMAGES_READY}'; }});"
+    ));
+    let _ = tauri::async_runtime::spawn_blocking(move || img_rx.recv_timeout(Duration::from_secs(60))).await;
+    // 再留一点时间给字体和排版
+    tokio_sleep(Duration::from_millis(300)).await;
     Ok(win)
 }
 
