@@ -2,7 +2,7 @@
 name = "app"
 version = "0.8.0"
 description = "Markdown notebook with an encrypted vault and project documents for AI coding"
-authors = ["Sam Xing"]
+authors = ["Samuel Xing (XING GUIYU)"]
 license = "AGPL-3.0-only"
 repository = "https://github.com/xingguiyu/cloud-notebook"
 edition = "2024"

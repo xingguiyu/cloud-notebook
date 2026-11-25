@@ -172,7 +172,7 @@ The app has no analytics and no account system. See the [privacy policy](https:/
 
 ## License
 
-Copyright © 2026 Sam Xing. Licensed under [AGPL-3.0](LICENSE). Official signed builds are published by Sichuan Yuejian Chuhua Culture Media Co., Ltd. (四川月见初花文化传媒有限公司).
+Copyright © 2026 Samuel Xing (XING GUIYU). Licensed under [AGPL-3.0](LICENSE). Official signed builds are published by Sichuan Yuejian Chuhua Culture Media Co., Ltd. (四川月见初花文化传媒有限公司).
 
 The name "Cloud Notebook" and the app icon are not covered by the license; forks should use a different name and icon.
 

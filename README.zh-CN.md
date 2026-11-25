@@ -170,7 +170,7 @@ superseded_by: 项目文档/shop/支付方案 v2.md
 
 ## 许可证
 
-版权所有 © 2026 Sam Xing，以 [AGPL-3.0](LICENSE) 许可发布。官方签名的安装包由四川月见初花文化传媒有限公司发布。
+版权所有 © 2026 Samuel Xing (XING GUIYU)，以 [AGPL-3.0](LICENSE) 许可发布。官方签名的安装包由四川月见初花文化传媒有限公司发布。
 
 "Cloud Notebook" 名称和应用图标不在许可范围内，分支版本请使用其他名称和图标。
 
