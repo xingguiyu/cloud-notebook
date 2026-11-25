@@ -2,7 +2,7 @@
 
 macOS 上的 Markdown 笔记本。笔记是你磁盘上的普通文件，内置加密的「项目 / 证件夹」，用来保存项目密钥和证件。
 
-[官网](https://xingguiyu.github.io/cloud-notebook/) · [English](README.md)
+[官网](https://xingguiyu.github.io/cloud-notebook/) · [国内镜像](https://notebook.qxsclass.com/) · [English](README.md)
 
 ![Cloud Notebook](docs/images/screenshot-zh.png)
 
@@ -87,6 +87,8 @@ git tag v0.8.0 && git push origin v0.8.0
 pnpm release           # 构建、签名、公证，产物在 release/v<版本>/
 pnpm release:publish   # 用这些文件创建 GitHub Release
 ```
+
+国内镜像（官网、安装包、更新清单）放在 notebook.qxsclass.com，发版后运行 `pnpm site:deploy` 同步。应用先问 GitHub，连不上再用镜像。
 
 两种方式都要用一把不在仓库里的私钥给更新包签名。本地从 `~/.tauri/cloud-notebook.key` 读取，CI 里从 `TAURI_SIGNING_PRIVATE_KEY` 这个 Secret 读取。分叉这个项目的人需要自己生成一对密钥（`pnpm tauri signer generate`），并替换 `tauri.conf.json` 里的公钥和更新地址。私钥丢了，已经装出去的版本就再也无法自动更新。
 

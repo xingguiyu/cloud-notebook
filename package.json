@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "release": "./scripts/release.sh",
-    "release:publish": "./scripts/publish.sh"
+    "release:publish": "./scripts/publish.sh",
+    "site:deploy": "./scripts/deploy-site.sh"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",

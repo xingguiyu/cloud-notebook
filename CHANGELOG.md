@@ -2,6 +2,10 @@
 
 Notable changes in each version. 中文：[CHANGELOG.zh-CN.md](CHANGELOG.zh-CN.md)
 
+## 0.8.3
+
+- Updates can also be fetched from a mirror in mainland China when GitHub cannot be reached.
+
 ## 0.8.2
 
 - The built-in user guide now follows the interface language even when it was installed by an earlier version. A guide you edited, or a folder you added your own notes to, is still left alone.

@@ -90,6 +90,8 @@ pnpm release           # build, sign, notarize; files land in release/v<version>
 pnpm release:publish   # create the GitHub release from them
 ```
 
+A mirror for mainland China (website, installers and the update manifest) is kept at notebook.qxsclass.com; `pnpm site:deploy` syncs it after a release. The app asks GitHub first and falls back to the mirror.
+
 Either way the update packages are signed with a private key that is not in the repository. Locally it is read from `~/.tauri/cloud-notebook.key`; in CI from the `TAURI_SIGNING_PRIVATE_KEY` secret. Anyone who forks the project must generate their own pair (`pnpm tauri signer generate`) and replace the public key and the update address in `tauri.conf.json`. Losing the private key means installed copies can no longer be updated.
 
 The workflow (`.github/workflows/release.yml`) runs the tests, checks that the tag matches the app version, and uploads the `.dmg` files. To have the builds signed and notarized, add these repository secrets. Without them a tag only runs the tests; an unsigned build can be made by starting the workflow by hand.

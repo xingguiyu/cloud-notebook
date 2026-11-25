@@ -125,13 +125,22 @@
     var el = document.getElementById('stars')
     if (el && d && typeof d.stargazers_count === 'number' && d.stargazers_count > 0) el.textContent = d.stargazers_count.toLocaleString()
   }).catch(function () {})
-  fetch(api + '/releases/latest').then(function (r) { return r.ok ? r.json() : null }).then(function (rel) {
-    if (!rel || !rel.tag_name) return
-    var dmg = (rel.assets || []).filter(function (a) { return /\.dmg$/i.test(a.name) })[0]
+  function setDownload(version, url) {
     document.querySelectorAll('[data-download]').forEach(function (a) {
-      if (dmg) a.href = dmg.browser_download_url
+      if (url) a.href = url
       var v = a.querySelector('.ver')
-      if (v) v.textContent = rel.tag_name.replace(/^v/, '')
+      if (v && version) v.textContent = version
+    })
+  }
+  // 国内镜像自己带着安装包：同站有 download/release.json 就用它，不依赖 GitHub（国内经常打不开）
+  fetch('download/release.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : Promise.reject() }).then(function (m) {
+    if (!m || !m.dmg) return Promise.reject()
+    setDownload(m.version, m.dmg)
+  }).catch(function () {
+    return fetch(api + '/releases/latest').then(function (r) { return r.ok ? r.json() : null }).then(function (rel) {
+      if (!rel || !rel.tag_name) return
+      var dmg = (rel.assets || []).filter(function (a) { return /\.dmg$/i.test(a.name) })[0]
+      setDownload(rel.tag_name.replace(/^v/, ''), dmg && dmg.browser_download_url)
     })
   }).catch(function () {})
 })()
