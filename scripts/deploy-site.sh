@@ -54,9 +54,13 @@ fi
 
 echo "==> 同步到 $SITE_HOST:$SITE_DIR"
 # 不带 --delete：旧版本的安装包留在服务器上，还在用旧清单的应用仍然能下载到
-rsync -az --progress "$STAGE/" "$SITE_HOST:$SITE_DIR/"
+# 统一成「目录 755、文件 644」：本机上权限偏严的文件（比如只有自己可读的截图）原样传上去，网站服务读不了，会返回 403
+rsync -az --progress --chmod=D755,F644 "$STAGE/" "$SITE_HOST:$SITE_DIR/"
 
 echo "==> 检查"
-for u in "$SITE_URL/" "$SITE_URL/privacy.html" "$SITE_URL/download/latest.json"; do
+# 页面、更新清单，以及页面用到的每个文件都要能打开
+urls=("$SITE_URL/" "$SITE_URL/privacy.html" "$SITE_URL/download/latest.json")
+for f in "$STAGE"/assets/* "$STAGE"/style.css "$STAGE"/site.js; do urls+=("$SITE_URL/${f#$STAGE/}"); done
+for u in "${urls[@]}"; do
   printf '    %s  %s\n' "$(curl -s -o /dev/null -m 15 -w '%{http_code}' "$u")" "$u"
 done
